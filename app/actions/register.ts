@@ -1,14 +1,15 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db"; // Aapki lib/db.ts wali file se import
+import { Role } from "@prisma/client";
 
 export async function registerUser(formData: FormData) {
   try {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const role = formData.get("role") as string;
-    const gymId = formData.get("gymId") as string; // <--- Frontend se gymId pakda
+    const gymId = formData.get("gymId") as string; 
     const adminSecret = formData.get("adminSecret") as string;
 
     const serverSecret = process.env.GYM_ADMIN_SECRET;
@@ -34,8 +35,9 @@ export async function registerUser(formData: FormData) {
       data: {
         email,
         password: hashedPassword,
-        role,
-        // Sirf tab add karein jab gymId exist karti ho (System Admin shayad bina gym ke ho)
+        // TypeScript ko batana ke ye string nahi balkay Prisma ka 'Role' enum hai
+        role: role as Role, 
+        // Sirf tab add karein jab gymId exist karti ho
         gymId: gymId || null, 
       },
     });
@@ -44,7 +46,7 @@ export async function registerUser(formData: FormData) {
   } catch (error: any) {
     console.error("Action Error:", error);
     
-    // P1002/P2002 Prisma errors handling for unique emails
+    // Prisma unique constraint error handling (Email check)
     if (error.code === 'P2002') {
       return { error: "Yeh email pehle se registered hai." };
     }
