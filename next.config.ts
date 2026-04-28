@@ -2,10 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typescript: {
-    ignoreBuildErrors: true, // Yeh line build pass karwayegi
+    ignoreBuildErrors: true, 
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: true, // Yeh asali tareeqa hai linting skip karne ka
   },
 };
 
