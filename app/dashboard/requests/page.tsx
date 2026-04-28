@@ -1,4 +1,5 @@
-import db from "@/lib/db";
+// 1. Fix: Path ko @/lib/prisma kar diya kyunki aapki file ka naam prisma.ts hai
+import { prisma } from "@/lib/prisma"; 
 import Link from "next/link";
 import { Inbox, Clock, User, ArrowRight } from "lucide-react";
 import { getServerSession } from "next-auth"; 
@@ -6,19 +7,17 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 
 export default async function RequestsPage() {
-  // 1. Session se logged-in user check karen
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
     redirect("/login");
   }
 
-  // 2. User ID ke zariye Trainer ki profile dhoonden
-  const trainer = await db.trainer.findUnique({
+  // 2. Fix: 'db' ki jagah 'prisma' use karna hai kyunki aapne upar 'prisma' import kiya hai
+  const trainer = await prisma.trainer.findUnique({
     where: { userId: session.user.id }
   });
 
-  // Agar user trainer nahi hai toh error dikhayen
   if (!trainer) {
     return (
       <div className="p-8 text-white">
@@ -27,13 +26,12 @@ export default async function RequestsPage() {
     );
   }
 
-  // 3. Database se sirf IS trainer ke members ki pending requests mangwayein
-  // Hum seedha trainerId nahi dekh rahe, balkay member ke andar ja kar check kar rahe hain
-  const requests = await db.request.findMany({
+  // 3. Fix: Yahan bhi 'db.request' ko 'prisma.request' kar diya
+  const requests = await prisma.request.findMany({
     where: { 
       status: "PENDING",
       member: {
-        trainerId: trainer.id // ✨ Yeh line ensure karti hai ke sirf aapke members ki request dikhe
+        trainerId: trainer.id 
       }
     },
     include: { 
@@ -46,7 +44,6 @@ export default async function RequestsPage() {
 
   return (
     <div className="p-8 bg-slate-950 min-h-screen text-white">
-      {/* Header Section */}
       <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-4">
           <div className="bg-blue-600/20 p-3 rounded-2xl border border-blue-500/30">
@@ -67,7 +64,6 @@ export default async function RequestsPage() {
         </div>
       </div>
 
-      {/* Requests List */}
       {requests.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-slate-900/30 border-2 border-dashed border-slate-800 rounded-3xl">
           <Inbox className="text-slate-700 mb-4" size={48} />
@@ -106,7 +102,6 @@ export default async function RequestsPage() {
                 </div>
               </div>
 
-              {/* ACTION BUTTON */}
               <Link 
                 href={`/dashboard/members/${req.memberId}?requestId=${req.id}`}
                 className="w-full md:w-auto"

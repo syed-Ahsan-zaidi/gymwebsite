@@ -4,23 +4,20 @@ import WeightInputForm from "@/components/analytics/WeightInputForm";
 import { getWeightHistory, getAttendanceStats } from "@/app/actions/analytics";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma"; // ✅ Aapne prisma import kiya hai
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProgressPage() {
-  // 1. Session se login user ki detail lein
   const session = await getServerSession(authOptions);
 
-  // Agar user login nahi hai, to login page par bhej dein
   if (!session?.user?.email) {
     redirect("/login");
   }
 
-  // 2. Database (Prisma) mein is user ko dhoondein taake 'memberId' mil sakay
-  // Hum email ya userId dono se dhoond sakte hain
-  const member = await db.member.findFirst({
+  // 1. FIX: 'db.member' ko 'prisma.member' kar diya
+  const member = await prisma.member.findFirst({
     where: {
       user: {
         email: session.user.email
@@ -28,7 +25,6 @@ export default async function ProgressPage() {
     }
   });
 
-  // Agar user login hai lekin uska Member profile nahi bana hua
   if (!member) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
@@ -40,14 +36,12 @@ export default async function ProgressPage() {
     );
   }
 
-  // 3. Member ki real ID (Jo Neon Console mein cmoaa... thi)
   const memberId = member.id; 
 
   let weightData = [];
   let attendanceData = [];
 
   try {
-    // Member ID ke mutabiq weight aur attendance fetch karein
     const [weights, attendance] = await Promise.all([
       getWeightHistory(memberId),
       getAttendanceStats(memberId)
@@ -60,7 +54,6 @@ export default async function ProgressPage() {
 
   return (
     <div className="space-y-10 pb-10">
-      {/* Header Section */}
       <div className="border-b border-slate-100 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-slate-900 uppercase italic tracking-tight">
@@ -71,15 +64,12 @@ export default async function ProgressPage() {
           </p>
         </div>
         
-        {/* Weight Input Form - Isay ab dynamic ID mil rahi hai */}
         <div className="max-w-xs w-full">
           <WeightInputForm memberId={memberId} />
         </div>
       </div>
 
-      {/* Analytics Content */}
       <div className="grid grid-cols-1 gap-12">
-        {/* Weight Journey Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-8 bg-blue-600 rounded-full"></div>
@@ -94,7 +84,6 @@ export default async function ProgressPage() {
           </div>
         </section>
 
-        {/* Consistency Map Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-8 bg-blue-600 rounded-full"></div>

@@ -1,7 +1,6 @@
 "use server";
-
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db"; // Aapki lib/db.ts wali file se import
+import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
 
 export async function registerUser(formData: FormData) {

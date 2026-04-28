@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma"; // ✅ Aapne prisma import kiya hai
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -11,7 +11,9 @@ export async function POST(req: Request) {
       return new NextResponse("Member ID is required", { status: 400 });
     }
 
-    const session = await db.workoutSession.create({
+    // ❌ Galti: const session = await db.workoutSession.create({
+    // ✅ Fix: 'prisma' use karen kyunki upar wahi import hai
+    const session = await prisma.workoutSession.create({
       data: {
         memberId,
         exercises, // JSON array

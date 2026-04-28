@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { headers } from "next/headers";
-import { db } from "@/lib/db"; 
+import db from "@/lib/prisma";
+
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
