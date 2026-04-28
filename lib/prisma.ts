@@ -1,11 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
-// Global type declaration
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Client initialize karein - Yahan variable ka naam 'prisma' rakhein
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
@@ -13,5 +11,3 @@ export const prisma =
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-export default prisma;
