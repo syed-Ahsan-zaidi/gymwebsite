@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/db";
+import db from "@/lib/prisma"; 
 import { format } from "date-fns";
 import { revalidatePath } from "next/cache";
 
@@ -11,7 +11,7 @@ export async function logWeight(memberId: string, weight: number) {
   try {
     console.log("Saving weight for:", memberId, weight); 
 
-    // 1. Member ki presence check karein (Foreign Key Error se bachne ke liye)
+    // Member ki presence check (Foreign Key constraint ke liye)
     const member = await db.member.findUnique({
       where: { id: memberId }
     });
@@ -21,7 +21,7 @@ export async function logWeight(memberId: string, weight: number) {
       return { success: false, error: "Member not found in database" };
     }
 
-    // 2. Data create karein
+    // Data create logic
     const res = await db.weightLog.create({
       data: {
         weight: Number(weight), 
@@ -32,7 +32,7 @@ export async function logWeight(memberId: string, weight: number) {
 
     console.log("Database Response:", res);
 
-    // Dashboard refresh karein taake graph update ho jaye
+    // Dashboard refresh taake graph foran update ho
     revalidatePath("/dashboard/progress");
     return { success: true };
   } catch (error) {
@@ -42,7 +42,7 @@ export async function logWeight(memberId: string, weight: number) {
 }
 
 /**
- * Weight graph ke liye data fetch karne ke liye
+ * Weight graph ke liye data fetch karne ke liye (Last 10 records)
  */
 export async function getWeightHistory(memberId: string) {
   try {
