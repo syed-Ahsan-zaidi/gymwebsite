@@ -1,13 +1,14 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   typescript: {
-    // TypeScript errors ko ignore karega
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: true, 
   },
   eslint: {
-    // Linting errors (jaise unused variables) ko ignore karega
     ignoreDuringBuilds: true,
   },
+  // Ye line Turbopack aur Prisma ke conflict ko kam karti hai
+  output: 'standalone', 
 };
 
 export default nextConfig;
