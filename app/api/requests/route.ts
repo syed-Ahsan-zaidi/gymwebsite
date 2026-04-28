@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma'; // Ensure karein ke path sahi hai
-
+export const dynamic = 'force-dynamic';
 // 1. POST: Naya request create karne ke liye (Member Form)
 export async function POST(req: Request) {
   try {
