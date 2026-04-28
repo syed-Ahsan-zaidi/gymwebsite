@@ -5,8 +5,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true, 
   },
   eslint: {
-    ignoreDuringBuilds: true, // Yeh asali tareeqa hai linting skip karne ka
+    ignoreDuringBuilds: true,
   },
+  // Yeh line Next.js ko batayegi ke build ke waqt DB connection ki fikar na kare
+  staticPageGenerationTimeout: 1000, 
 };
 
 export default nextConfig;
