@@ -1,0 +1,193 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. Core Authentication & Multi-tenancy
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  role     Role   @default(MEMBER)
+
+  // Gym Connection
+
+  gym            GymProfile? @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  gymId          String?
+  memberProfile  Member?
+  trainerProfile Trainer?
+  createdAt      DateTime    @default(now())
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  TRAINER
+  MEMBER
+}
+
+// 2. Gym Model (The Tenant)
+model GymProfile {
+  id          String   @id @default(cuid())
+  gymName     String
+  location    String
+  facilities  String[]
+  adminSecret String   @default("flex-secret")
+
+  // Relations
+  users     User[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+// 3. Member Profile
+model Member {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name           String
+  phoneNumber    String
+  age            Int
+  weight         Float
+  height         Float
+  fitnessGoal    String
+  allergies      String[]
+  medicalHistory String?
+
+  status    Status    @default(PENDING)
+  joinedAt  DateTime  @default(now())
+  expiresAt DateTime?
+
+  payments  Payment[]
+  trainerId String?
+  trainer   Trainer?  @relation(fields: [trainerId], references: [id])
+
+  chats           Chat[]
+  plans           Plan[]
+  attendance      Attendance[]
+  workoutSessions WorkoutSession[]
+  weightLogs      WeightLog[]
+  requests        Request[]
+}
+
+enum Status {
+  PENDING
+  ACTIVE
+  EXPIRED
+}
+
+// 4. Trainer Profile
+model Trainer {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name           String
+  specialization String
+  experience     Int
+
+  members Member[]
+  plans   Plan[]
+  requests Request[]
+}
+
+// 5. Payments & Logs
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  receiptUrl    String?
+  transactionId String?
+  paymentMethod String?
+  memberId      String
+  member        Member        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  REJECTED
+}
+
+// 6. AI & Management Features
+model Chat {
+  id        String   @id @default(cuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  message   String   @db.Text
+  response  String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model Plan {
+  id        String  @id @default(cuid())
+  memberId  String
+  member    Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  trainerId String
+  trainer   Trainer @relation(fields: [trainerId], references: [id])
+
+  type       PlanType
+  content    Json
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+enum PlanType {
+  WORKOUT
+  DIET
+}
+
+model Attendance {
+  id       String   @id @default(cuid())
+  date     DateTime @default(now())
+  memberId String
+  member   Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId])
+}
+
+// schema.prisma mein niche ye add karein:
+
+model WorkoutSession {
+  id       String @id @default(cuid())
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  exercises   Json // Isme array of objects store hoga: [{name, sets, reps, weight}]
+  progress    Int      @default(0) // e.g., 100%
+  completedAt DateTime @default(now())
+
+  @@index([memberId])
+}
+
+model WeightLog {
+  id       String   @id @default(cuid())
+  weight   Float
+  date     DateTime @default(now())
+  memberId String
+  member   Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId])
+}
+
+model Request {
+  id        String   @id @default(cuid())
+  memberId  String
+  trainerId String?  // Optional agar request general ho, ya required karein agar specific hai
+  type      String   // "WORKOUT" ya "DIET"
+  message   String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+
+  // Relationships
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  trainer   Trainer? @relation(fields: [trainerId], references: [id])
+}
