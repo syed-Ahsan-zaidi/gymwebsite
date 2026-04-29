@@ -3,9 +3,24 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+const isLocalHostUrl = (value: string) => {
+  try {
+    const parsed = new URL(value);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+};
+
 const getBaseUrl = (req: Request) => {
   const explicit = process.env.NEXT_PUBLIC_URL?.trim();
-  if (explicit) return explicit.replace(/\/$/, "");
+  if (explicit) {
+    const normalizedExplicit = explicit.replace(/\/$/, "");
+    // Production me localhost-based redirect allow mat karo.
+    if (!(process.env.NODE_ENV === "production" && isLocalHostUrl(normalizedExplicit))) {
+      return normalizedExplicit;
+    }
+  }
 
   const origin = req.headers.get("origin");
   if (origin) return origin.replace(/\/$/, "");
