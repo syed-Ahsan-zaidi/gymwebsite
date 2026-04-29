@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // experimental ke bajaye direct bahar likhein
+  /* config options here */
   serverExternalPackages: ["@prisma/client"],
-  transpilePackages: ["@prisma/client"],
+  // transpilePackages wali line ko bilkul hata dein
 };
 
 export default nextConfig;
