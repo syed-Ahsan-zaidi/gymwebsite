@@ -4,7 +4,7 @@ import WeightInputForm from "@/components/analytics/WeightInputForm";
 import { getWeightHistory, getAttendanceStats } from "@/app/actions/analytics";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import  prisma  from "@/lib/prisma"; // ✅ Aapne prisma import kiya hai
+import prisma from "@/lib/prisma"; 
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,6 @@ export default async function ProgressPage() {
     redirect("/login");
   }
 
-  // 1. FIX: 'db.member' ko 'prisma.member' kar diya
   const member = await prisma.member.findFirst({
     where: {
       user: {
@@ -38,16 +37,17 @@ export default async function ProgressPage() {
 
   const memberId = member.id; 
 
-  let weightData = [];
-  let attendanceData = [];
+  // ✅ FIXED: Explicitly defining types to avoid 'implicitly has any[] type' error
+  let weightData: any[] = [];
+  let attendanceData: any[] = [];
 
   try {
     const [weights, attendance] = await Promise.all([
       getWeightHistory(memberId),
       getAttendanceStats(memberId)
     ]);
-    weightData = weights;
-    attendanceData = attendance;
+    weightData = weights || [];
+    attendanceData = attendance || [];
   } catch (error) {
     console.error("Error fetching analytics data:", error);
   }
