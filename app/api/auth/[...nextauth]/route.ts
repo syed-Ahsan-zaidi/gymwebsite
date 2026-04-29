@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+export const dynamic = "force-dynamic";
 
 // ✅ Types define karna taaki 'token.id' aur 'session.user.role' par error na aaye
 declare module "next-auth" {
