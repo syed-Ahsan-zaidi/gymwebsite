@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-import { prisma } from "@/lib/prisma"; // ✅ Aapne prisma import kiya hai
+import  prisma  from "@/lib/prisma"; // ✅ Aapne prisma import kiya hai
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {

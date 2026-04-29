@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // Aapka prisma instance
+import  prisma  from "@/lib/prisma"; // Aapka prisma instance
 
 export async function GET() {
   try {

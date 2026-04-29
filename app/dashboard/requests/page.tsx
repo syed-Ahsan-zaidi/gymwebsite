@@ -1,5 +1,5 @@
 // 1. Fix: Path ko @/lib/prisma kar diya kyunki aapki file ka naam prisma.ts hai
-import { prisma } from "@/lib/prisma"; 
+import  prisma  from "@/lib/prisma"; 
 import Link from "next/link";
 import { Inbox, Clock, User, ArrowRight } from "lucide-react";
 import { getServerSession } from "next-auth"; 

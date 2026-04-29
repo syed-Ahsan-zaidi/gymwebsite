@@ -4,7 +4,7 @@ import WeightInputForm from "@/components/analytics/WeightInputForm";
 import { getWeightHistory, getAttendanceStats } from "@/app/actions/analytics";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { prisma } from "@/lib/prisma"; // ✅ Aapne prisma import kiya hai
+import  prisma  from "@/lib/prisma"; // ✅ Aapne prisma import kiya hai
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
