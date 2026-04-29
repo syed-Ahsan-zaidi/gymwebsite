@@ -3,7 +3,7 @@ import  prisma  from "@/lib/prisma";
 import Link from "next/link";
 import { Inbox, Clock, User, ArrowRight } from "lucide-react";
 import { getServerSession } from "next-auth"; 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; 
+import { authOptions } from "@/lib/auth"; 
 import { redirect } from "next/navigation";
 
 export default async function RequestsPage() {

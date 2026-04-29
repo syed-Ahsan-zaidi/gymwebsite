@@ -3,7 +3,7 @@ import AttendanceMap from "@/components/analytics/AttendanceMap";
 import WeightInputForm from "@/components/analytics/WeightInputForm"; 
 import { getWeightHistory, getAttendanceStats } from "@/app/actions/analytics";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma"; 
 import { redirect } from "next/navigation";
 

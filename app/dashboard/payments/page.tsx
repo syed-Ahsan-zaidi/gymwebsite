@@ -1,7 +1,7 @@
 import  prisma  from "@/lib/prisma"; // Import prisma normally
 import { PaymentStatus, Prisma } from "@prisma/client"; // Prisma types import karein
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; 
+import { authOptions } from "@/lib/auth"; 
 import { redirect } from "next/navigation";
 import AdminPaymentList from "@/components/AdminPaymentList";
 import { CreditCard, History, Clock, Globe } from "lucide-react";

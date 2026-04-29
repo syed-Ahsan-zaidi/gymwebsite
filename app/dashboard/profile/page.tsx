@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { Dumbbell, MapPin, Building2, Pencil } from "lucide-react";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 

@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { Contact, Award, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 // 1. Pehle yahan component import karein
 import DeleteTrainerBtn from "@/components/DeleteTrainerBtn"; 
 
