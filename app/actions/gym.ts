@@ -1,4 +1,5 @@
 "use server";
+import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 // 1. Sab Gyms dekhne ke liye (Super Admin)
