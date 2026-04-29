@@ -1,7 +1,26 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { NextAuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import db from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+
+// ✅ Types define karna taaki 'token.id' aur 'session.user.role' par error na aaye
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role: string;
+      gymId?: string | null;
+    } & DefaultSession["user"];
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    role: string;
+    gymId?: string | null;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,7 +33,8 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma!.user.findUnique({
+        // ✅ 'prisma!' ki jagah simple 'prisma' (kyunke import upar hai)
+        const user = await prisma.user.findUnique({
           where: { email: credentials.email }
         });
 
@@ -23,10 +43,10 @@ export const authOptions: NextAuthOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) return null;
 
-        // Yahan se return hone wala object token mein jata hai
         return {
           id: user.id,
           email: user.email,
+          name: user.name, // optional
           role: user.role,
           gymId: user.gymId,
         };
@@ -34,28 +54,26 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    // 1. JWT mein id, role aur gymId save karna
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id; // <--- Yeh missing tha
+        token.id = user.id;
         token.role = (user as any).role;
         token.gymId = (user as any).gymId;
       }
       return token;
     },
-    // 2. Session mein data pass karna taaki Dashboard/Actions use kar sakein
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id; // <--- Yeh line error fix karegi
-        (session.user as any).role = token.role;
-        (session.user as any).gymId = token.gymId;
+        session.user.id = token.id;
+        session.user.role = token.role;
+        session.user.gymId = token.gymId;
       }
       return session;
     }
   },
   session: { strategy: "jwt" },
   pages: {
-    signIn: '/login', // Optional: apna custom login page path dein
+    signIn: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
