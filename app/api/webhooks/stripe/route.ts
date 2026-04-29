@@ -57,7 +57,7 @@ export async function POST(req: Request) {
           memberId: memberId,
           amount: amount,
           status: "SUCCESS", // <--- Screenshots mein 'SUCCESS' hai, isliye humne 'PAID' ko change kar diya
-          method: "STRIPE",
+          paymentMethod: "STRIPE",
           // Agar database mein 'gymId' column hai toh niche wali line uncomment karein:
           // gymId: updatedMember.user.gymId 
         }
