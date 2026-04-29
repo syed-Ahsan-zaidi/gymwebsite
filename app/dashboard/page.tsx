@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import db from "@/lib/prisma"
+import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -34,9 +34,9 @@ export default async function DashboardPage() {
 
   // --- 1. SUPER ADMIN VIEW ---
   if (userRole === "SUPER_ADMIN") {
-    const totalGyms = await prisma.gymProfile.count();
-    const totalUsers = await prisma.user.count();
-    const gyms = await prisma.gymProfile.findMany({
+      const totalGyms = await prisma!.gymProfile.count();
+      const totalUsers = await prisma!.user.count();
+      const gyms = await prisma!.gymProfile.findMany({
       include: { _count: { select: { users: true } } },
       orderBy: { createdAt: 'desc' }
     });
