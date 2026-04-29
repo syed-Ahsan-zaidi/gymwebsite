@@ -1,14 +1,24 @@
 "use client";
 
 import { registerGymAction } from "@/app/actions/registerGym";
-import { BackNavigation } from "@/components/back-navigation"; // Isse import lazmi karein
+import { BackNavigation } from "@/components/back-navigation";
 
 export default function RegisterGymPage() {
+  // ✅ Wrapper function jo error ko handle kare
+  async function handleFormAction(formData: FormData) {
+    const result = await registerGymAction(formData);
+    
+    if (result?.error) {
+      // Aap yahan toast ya alert dikha sakte hain
+      alert(result.error);
+    } else {
+      alert("Gym and Admin created successfully!");
+    }
+  }
+
   return (
-    // 1. 'relative' class add ki hai taake absolute back button sahi kaam kare
     <div className="relative min-h-screen bg-slate-50 flex items-center justify-center p-6">
       
-      {/* 2. Back Button yahan add kar diya */}
       <BackNavigation />
 
       <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 border border-indigo-50">
@@ -19,7 +29,8 @@ export default function RegisterGymPage() {
           Create a new tenant on the FlexManage platform.
         </p>
         
-        <form action={registerGymAction} className="space-y-4">
+        {/* ✅ form action ko update kiya */}
+        <form action={handleFormAction} className="space-y-4">
           <input 
             name="gymName" 
             placeholder="Gym Name (e.g. Iron Paradise)" 
