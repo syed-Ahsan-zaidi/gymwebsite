@@ -14,6 +14,13 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
     const userId = (session.user as any).id;
+    const allergies =
+      typeof data.allergies === "string" && data.allergies.trim().length > 0
+        ? data.allergies
+            .split(",")
+            .map((item: string) => item.trim())
+            .filter(Boolean)
+        : [];
 
     // 1. Prisma Transaction: Member Profile aur Payment record aik sath banay ga
     const profile = await prisma.member.create({
@@ -25,6 +32,7 @@ export async function POST(req: Request) {
         weight: parseFloat(data.weight) || 0,
         height: parseFloat(data.height) || 0,
         fitnessGoal: data.fitnessGoal || "",
+        allergies,
         medicalHistory: data.medicalHistory || "",
         status: "PENDING",
 
@@ -54,11 +62,13 @@ export async function POST(req: Request) {
     });
 
   } catch (error: any) {
-    console.error("❌ Setup API Error:", error.message);
+    console.error("❌ Setup API Error:", error);
 
-    // Agar 'paymentMethod' ki wajah se ab bhi error aaye, toh niche wala catch use karein
     return NextResponse.json(
-      { error: "Database error: Could not create profile. Check if schema matches fields." }, 
+      {
+        error: "Database error: Could not create profile.",
+        detail: error?.message || "Unknown database error",
+      },
       { status: 500 }
     );
   }
