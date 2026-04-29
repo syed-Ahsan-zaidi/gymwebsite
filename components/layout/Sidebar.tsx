@@ -21,7 +21,12 @@ import {
   DollarSign 
 } from "lucide-react";
 
-export default function Sidebar() {
+type SidebarProps = {
+  isOpen?: boolean;
+  onClose?: () => void;
+};
+
+export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const role = session?.user?.role;
@@ -69,7 +74,17 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-64 min-w-[256px] flex-shrink-0 bg-slate-950 text-white h-screen fixed left-0 top-0 p-6 shadow-2xl border-r border-slate-800 font-sans flex flex-col z-50">
+      <div
+        onClick={onClose}
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity md:hidden ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      />
+      <aside
+        className={`w-64 min-w-[256px] flex-shrink-0 bg-slate-950 text-white h-screen fixed left-0 top-0 p-6 shadow-2xl border-r border-slate-800 font-sans flex flex-col z-50 transition-transform md:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         
         {/* LOGO SECTION */}
         <div className="flex items-center gap-2 mb-10 px-2">
@@ -105,6 +120,7 @@ export default function Sidebar() {
               <Link 
                 key={item.name} 
                 href={item.href || "#"}
+                onClick={onClose}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   isActive 
                     ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" 
@@ -143,6 +159,7 @@ export default function Sidebar() {
         <div className="pt-6 border-t border-slate-900 space-y-1">
           <Link 
             href="/dashboard/settings" 
+            onClick={onClose}
             className={`flex items-center gap-3 px-4 py-3 transition rounded-xl hover:bg-slate-900 ${
               pathname === "/dashboard/settings" ? "text-white bg-slate-900" : "text-slate-500"
             }`}
