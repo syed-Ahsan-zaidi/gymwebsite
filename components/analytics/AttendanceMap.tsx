@@ -22,9 +22,7 @@ export default function AttendanceMap({ data = [] }: AttendanceMapProps) {
   }, []);
 
   const today = new Date();
-  // Pura saal dikhane ke liye
   const startOfYear = new Date(today.getFullYear(), 0, 1);
-
   const safeData = Array.isArray(data) ? data : [];
 
   if (!mounted) return <div className="h-40 w-full bg-slate-50 animate-pulse rounded-xl" />;
@@ -46,10 +44,17 @@ export default function AttendanceMap({ data = [] }: AttendanceMapProps) {
               if (!value || value.count === 0) return 'color-empty';
               return 'color-filled';
             }}
-            tooltipDataAttrs={(value: any) => {
+            // ✅ FIXED: Using 'any' casting to bypass strict TooltipDataAttrs check
+            tooltipDataAttrs={(value: any): any => {
+              if (!value || !value.date) {
+                return {
+                  'data-tooltip-id': 'heatmap-tooltip',
+                  'data-tooltip-content': 'No activity',
+                };
+              }
               return {
                 'data-tooltip-id': 'heatmap-tooltip',
-                'data-tooltip-content': value?.date ? `${value.date}: Workout Done` : 'No activity',
+                'data-tooltip-content': `${value.date}: Workout Done`,
               };
             }}
           />
@@ -57,7 +62,6 @@ export default function AttendanceMap({ data = [] }: AttendanceMapProps) {
         <Tooltip id="heatmap-tooltip" style={{ borderRadius: '8px', fontSize: '12px' }} />
       </div>
 
-      {/* Legend / Key */}
       <div className="flex items-center gap-4 mt-4 border-t border-slate-50 pt-4">
         <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-400">
           <div className="w-3 h-3 bg-slate-100 rounded-[2px]"></div>
@@ -70,18 +74,16 @@ export default function AttendanceMap({ data = [] }: AttendanceMapProps) {
       </div>
 
       <style jsx global>{`
-        /* Heatmap Colors Customization */
         .react-calendar-heatmap .color-filled { 
-          fill: #2563eb; /* Blue-600 jo aapke theme se match karega */
+          fill: #2563eb;
         }
         .react-calendar-heatmap .color-empty { 
           fill: #f1f5f9; 
         }
         .react-calendar-heatmap rect {
-          rx: 2px; /* Rounded corners for boxes */
+          rx: 2px;
           ry: 2px;
         }
-        /* Mobile Scrollbar fix */
         .heatmap-wrapper::-webkit-scrollbar {
           height: 4px;
         }
