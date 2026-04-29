@@ -2,7 +2,6 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-// 1. Sab Gyms dekhne ke liye (Super Admin)
 export const getGyms = async () => {
   try {
     const gyms = await prisma.gymProfile.findMany({
@@ -16,7 +15,6 @@ export const getGyms = async () => {
   }
 };
 
-// 2. Gym delete karne ke liye
 export const deleteGymAction = async (gymId: string) => {
   try {
     await prisma.gymProfile.delete({ where: { id: gymId } });
@@ -27,7 +25,6 @@ export const deleteGymAction = async (gymId: string) => {
   }
 };
 
-// 3. Profile aur Facilities update karne ke liye
 export const updateGymProfile = async (gymId: string, formData: FormData, userId: string) => {
   try {
     const gymName = formData.get("gymName") as string;
@@ -44,20 +41,15 @@ export const updateGymProfile = async (gymId: string, formData: FormData, userId
         gymName,
         location,
         facilities: facilitiesArray,
-        // Zaroori: User ko is gym ke saath connect karein
-        users: {
-          connect: { id: userId }
-        }
+        users: { connect: { id: userId } }
       },
     });
 
     revalidatePath("/dashboard/profile");
     revalidatePath("/dashboard/settings");
-
     return { success: true };
   } catch (error) {
     console.error("Update Error:", error);
     return { success: false };
   }
 };
-
