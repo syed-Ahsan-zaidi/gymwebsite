@@ -4,8 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  
-  
 }
 
 // 1. Core Authentication & Multi-tenancy
