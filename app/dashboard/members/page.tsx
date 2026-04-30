@@ -28,7 +28,8 @@ export default async function MembersPage() {
         Branch <span className="text-indigo-600">Members</span>
       </h1>
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[680px] text-left">
           <thead className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
             <tr>
               <th className="p-4">Member Name</th>
@@ -84,7 +85,8 @@ export default async function MembersPage() {
               })
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   );

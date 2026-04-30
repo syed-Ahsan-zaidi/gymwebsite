@@ -127,10 +127,10 @@ export default async function DashboardPage() {
     ]);
 
     return (
-      <div className="p-10 space-y-12 max-w-7xl mx-auto bg-gray-50 min-h-screen">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-8">
+      <div className="px-4 py-6 sm:p-10 space-y-8 sm:space-y-12 max-w-7xl mx-auto bg-gray-50 min-h-screen">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6 sm:pb-8">
           <div>
-            <h1 className="text-5xl font-black text-gray-900 tracking-tight italic uppercase">ADMIN <span className="text-indigo-600">HQ</span></h1>
+            <h1 className="text-3xl sm:text-5xl font-black text-gray-900 tracking-tight italic uppercase">ADMIN <span className="text-indigo-600">HQ</span></h1>
             <p className="text-gray-500 font-medium mt-2">Branch Context: <span className="text-indigo-600 font-black uppercase">Active Branch</span></p>
           </div>
           <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 text-center min-w-[120px]">
@@ -142,9 +142,9 @@ export default async function DashboardPage() {
           <h2 className="text-2xl font-black mb-6 text-gray-800 flex items-center gap-3 italic uppercase">💳 Verification Logs</h2>
           <AdminPaymentList payments={pendingPayments} />
         </section>
-        <section className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-xl">
-          <h2 className="text-2xl font-black mb-6 italic uppercase flex items-center gap-2"><Settings size={24} /> Gym Configuration</h2>
-          <div className="bg-white/5 p-8 rounded-[2rem] border border-white/10"><GymProfileForm /></div>
+        <section className="bg-slate-900 p-4 sm:p-8 md:p-10 rounded-[2rem] sm:rounded-[3rem] text-white shadow-xl">
+          <h2 className="text-xl sm:text-2xl font-black mb-4 sm:mb-6 italic uppercase flex items-center gap-2"><Settings size={22} /> Gym Configuration</h2>
+          <div className="bg-white/5 p-3 sm:p-6 md:p-8 rounded-[1.25rem] sm:rounded-[2rem] border border-white/10"><GymProfileForm /></div>
         </section>
       </div>
     );
