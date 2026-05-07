@@ -12,6 +12,7 @@ model User {
   email    String @unique
   password String
   role     Role   @default(MEMBER)
+  adminApprovalStatus AdminApprovalStatus @default(APPROVED)
 
   // Gym Connection
 
@@ -20,6 +21,10 @@ model User {
   memberProfile  Member?
   trainerProfile Trainer?
   createdAt      DateTime    @default(now())
+
+  // Indexes for efficient role-based queries
+  @@index([gymId, role])
+  @@index([role])
 }
 
 enum Role {
@@ -27,6 +32,12 @@ enum Role {
   ADMIN
   TRAINER
   MEMBER
+}
+
+enum AdminApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 // 2. Gym Model (The Tenant)
@@ -41,6 +52,10 @@ model GymProfile {
   users     User[]
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+
+  // Indexes for efficient pagination
+  @@index([createdAt])
+  @@index([createdAt, id])
 }
 
 // 3. Member Profile
@@ -72,6 +87,8 @@ model Member {
   workoutSessions WorkoutSession[]
   weightLogs      WeightLog[]
   requests        Request[]
+  sessionBookings SessionBooking[]
+  classEnrollments GroupClassEnrollment[]
 }
 
 enum Status {
@@ -93,6 +110,9 @@ model Trainer {
   members Member[]
   plans   Plan[]
   requests Request[]
+  availabilitySlots TrainerAvailabilitySlot[]
+  sessionBookings   SessionBooking[]
+  classes           GroupClass[]
 }
 
 // 5. Payments & Logs
@@ -114,6 +134,93 @@ enum PaymentStatus {
   PENDING
   SUCCESS
   REJECTED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum EnrollmentStatus {
+  ENROLLED
+  CANCELLED
+  ATTENDED
+}
+
+model TrainerAvailabilitySlot {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  startTime   DateTime
+  endTime     DateTime
+  isRecurring Boolean  @default(false)
+  weekday     Int?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookings SessionBooking[]
+
+  @@index([trainerId, isActive])
+  @@index([trainerId, startTime])
+  @@index([trainerId, weekday, isRecurring])
+}
+
+model SessionBooking {
+  id        String        @id @default(cuid())
+  trainerId String
+  trainer   Trainer       @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    Member        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  slotId    String?
+  slot      TrainerAvailabilitySlot? @relation(fields: [slotId], references: [id], onDelete: SetNull)
+  startTime DateTime
+  endTime   DateTime
+  status    BookingStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // 🔥 Optimization: In indexes mein endTime ko shamil karna zaroori hai 
+  // taake overlap (lt/gt) logic database level par fast chale.
+  @@index([trainerId, status, startTime, endTime])
+  @@index([memberId, status, startTime, endTime])
+  @@index([slotId])
+}
+
+model GroupClass {
+  id        String   @id @default(cuid())
+  trainerId String
+  trainer   Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  title     String
+  classType String
+  startTime DateTime
+  endTime   DateTime
+  capacity  Int
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments GroupClassEnrollment[]
+
+  @@index([trainerId, startTime, isActive])
+}
+
+model GroupClassEnrollment {
+  id        String           @id @default(cuid())
+  classId   String
+  groupClass GroupClass      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    Member           @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  status    EnrollmentStatus @default(ENROLLED)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([classId, memberId])
+  @@index([memberId, status])
+  @@index([classId, status])
 }
 
 // 6. AI & Management Features

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { approvePaymentAction } from "@/app/actions/payment";
 import { X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface PaymentModalProps {
   payment: {
@@ -19,6 +20,7 @@ interface PaymentModalProps {
 }
 
 export default function PaymentModal({ payment, onClose }: PaymentModalProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleApprove = async () => {
@@ -31,7 +33,7 @@ export default function PaymentModal({ payment, onClose }: PaymentModalProps) {
       if (result.success) {
         alert("Member status ACTIVE ho gaya hai! ✅");
         onClose();
-        window.location.reload(); // Data refresh karne ke liye
+        router.refresh();
       } else {
         alert("Error: " + result.message);
       }
@@ -44,7 +46,7 @@ export default function PaymentModal({ payment, onClose }: PaymentModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100">
+      <div className="w-full max-w-lg overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white shadow-2xl">
         
         {/* Header */}
         <div className="p-6 border-b flex justify-between items-center bg-gray-50/50">
@@ -61,7 +63,7 @@ export default function PaymentModal({ payment, onClose }: PaymentModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="p-5 sm:p-8">
           
           {/* Member Info Card */}
           <div className="flex items-center gap-4 mb-8 p-4 bg-zinc-900 rounded-3xl text-white">
@@ -92,7 +94,7 @@ export default function PaymentModal({ payment, onClose }: PaymentModalProps) {
           </div>
 
           {/* Details Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-10">
+          <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="p-4 bg-green-50 rounded-3xl border border-green-100 shadow-sm">
               <p className="text-[10px] text-green-600 uppercase font-black tracking-widest mb-1">Fee Amount</p>
               <p className="font-black text-xl text-green-700 italic">PKR {payment.amount}</p>

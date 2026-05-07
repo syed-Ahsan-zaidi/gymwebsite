@@ -1,38 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
-import { X, TrendingUp, Users, Loader2 } from "lucide-react";
+import { X, TrendingUp, Users } from "lucide-react";
 
 interface ModalProps {
   isOpen: boolean;
+  stats: { totalAmount: number; totalCount: number };
   onClose: () => void;
 }
 
-export default function TodayPaymentsModal({ isOpen, onClose }: ModalProps) {
-  const [stats, setStats] = useState({ totalAmount: 0, totalCount: 0 });
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchTodayStats = async () => {
-      if (!isOpen) return;
-      
-      setLoading(true);
-      try {
-        const response = await fetch("/api/stats/today");
-        const data = await response.json();
-        setStats({
-          totalAmount: data.totalAmount,
-          totalCount: data.totalCount,
-        });
-      } catch (error) {
-        console.error("Error fetching today's stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTodayStats();
-  }, [isOpen]);
-
+export default function TodayPaymentsModal({ isOpen, stats, onClose }: ModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -52,13 +27,7 @@ export default function TodayPaymentsModal({ isOpen, onClose }: ModalProps) {
 
         {/* CONTENT */}
         <div className="p-6 space-y-4">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-2">
-              <Loader2 className="animate-spin text-blue-600" size={32} />
-              <p className="text-xs font-bold text-slate-400 uppercase">Fetching Stats...</p>
-            </div>
-          ) : (
-            <>
+          <>
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="bg-green-100 p-2 rounded-lg"><TrendingUp size={20} className="text-green-600" /></div>
@@ -78,8 +47,7 @@ export default function TodayPaymentsModal({ isOpen, onClose }: ModalProps) {
                   {stats.totalCount < 10 ? `0${stats.totalCount}` : stats.totalCount}
                 </span>
               </div>
-            </>
-          )}
+          </>
         </div>
 
         {/* FOOTER */}

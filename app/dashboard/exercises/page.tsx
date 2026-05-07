@@ -15,6 +15,13 @@ export default function MemberExercisePage() {
     { id: 1, name: "Bench Press", sets: 3, reps: 12, weight: "", completed: false },
     { id: 2, name: "Squats", sets: 4, reps: 10, weight: "", completed: false },
     { id: 3, name: "Shoulder Press", sets: 3, reps: 12, weight: "", completed: false },
+    { id: 4, name: "Deadlift", sets: 4, reps: 8, weight: "", completed: false },
+    { id: 5, name: "Lat Pulldown", sets: 3, reps: 12, weight: "", completed: false },
+    { id: 6, name: "Barbell Row", sets: 3, reps: 10, weight: "", completed: false },
+    { id: 7, name: "Leg Press", sets: 4, reps: 12, weight: "", completed: false },
+    { id: 8, name: "Bicep Curl", sets: 3, reps: 15, weight: "", completed: false },
+    { id: 9, name: "Tricep Pushdown", sets: 3, reps: 15, weight: "", completed: false },
+    { id: 10, name: "Plank", sets: 3, reps: 60, weight: "", completed: false },
   ]);
 
   const completedCount = exercises.filter(ex => ex.completed).length;

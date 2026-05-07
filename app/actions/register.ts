@@ -1,26 +1,18 @@
 "use server";
 import bcrypt from "bcryptjs";
 import prisma  from "@/lib/prisma";
-import { Role } from "@prisma/client";
+import { AdminApprovalStatus, Role } from "@prisma/client";
+import { hasAdminApprovalStatusColumn } from "@/lib/dbCapabilities";
 
 export async function registerUser(formData: FormData) {
   try {
-    const email = formData.get("email") as string;
+    const email = (formData.get("email") as string).trim().toLowerCase();
     const password = formData.get("password") as string;
     const role = formData.get("role") as string;
+    const normalizedRole = role?.toUpperCase() as Role;
     const gymId = formData.get("gymId") as string; 
-    const adminSecret = formData.get("adminSecret") as string;
-
-    const serverSecret = process.env.GYM_ADMIN_SECRET;
-
-    // --- Validation Logic ---
-    if (role === "ADMIN" || role === "SYSTEM_ADMIN") {
-      const finalSecret = serverSecret || "1234";
-
-      if (!adminSecret || adminSecret !== finalSecret) {
-        return { error: "Invalid Admin Secret Key! Aap register nahi kar sakte." };
-      }
-    }
+    const canUseAdminApproval = await hasAdminApprovalStatusColumn();
+    // Secret key intentionally not required for any role.
 
     // Member ke liye gymId compulsory hona chahiye
     if (role === "MEMBER" && !gymId) {
@@ -35,11 +27,23 @@ export async function registerUser(formData: FormData) {
         email,
         password: hashedPassword,
         // TypeScript ko batana ke ye string nahi balkay Prisma ka 'Role' enum hai
-        role: role as Role, 
+        role: normalizedRole,
+        ...(canUseAdminApproval
+          ? {
+              adminApprovalStatus:
+                normalizedRole === "ADMIN"
+                  ? AdminApprovalStatus.PENDING
+                  : AdminApprovalStatus.APPROVED,
+            }
+          : {}),
         // Sirf tab add karein jab gymId exist karti ho
         gymId: gymId || null, 
       },
     });
+
+    if (normalizedRole === "ADMIN") {
+      return { success: true, message: "Admin request submitted. Wait for super admin approval." };
+    }
 
     return { success: true };
   } catch (error: any) {

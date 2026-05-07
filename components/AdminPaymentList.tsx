@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { approvePaymentAction } from "@/app/actions/payment";
 import { CheckCircle, XCircle, Eye, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Payment {
   id: string;
@@ -16,8 +17,14 @@ interface Payment {
 }
 
 export default function AdminPaymentList({ payments }: { payments: Payment[] }) {
+  const router = useRouter();
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<Payment[]>(payments);
+
+  useEffect(() => {
+    setRows(payments);
+  }, [payments]);
 
   const handleApprove = async () => {
     if (!selectedPayment) return;
@@ -27,8 +34,9 @@ export default function AdminPaymentList({ payments }: { payments: Payment[] }) 
       const res = await approvePaymentAction(selectedPayment.id, selectedPayment.memberId);
       if (res.success) {
         alert("Success! Membership has been activated.");
+        setRows((prev) => prev.filter((payment) => payment.id !== selectedPayment.id));
         setSelectedPayment(null);
-        window.location.reload(); // Data refresh karne ke liye
+        router.refresh();
       } else {
         alert("Failed to approve. Please try again.");
       }
@@ -42,15 +50,15 @@ export default function AdminPaymentList({ payments }: { payments: Payment[] }) 
 
   return (
     <div className="space-y-4">
-      {payments.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="p-10 bg-gray-50 rounded-2xl border border-dashed text-center text-gray-400">
           No pending payment requests at the moment.
         </div>
       ) : (
-        payments.map((p) => (
+        rows.map((p) => (
           <div 
             key={p.id} 
-            className="p-4 bg-white border border-gray-100 rounded-2xl flex justify-between items-center shadow-sm hover:shadow-md transition-shadow"
+            className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex items-center gap-4">
               <div className="h-10 w-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold">
@@ -64,7 +72,7 @@ export default function AdminPaymentList({ payments }: { payments: Payment[] }) 
             
             <button 
               onClick={() => setSelectedPayment(p)}
-              className="flex items-center gap-2 bg-black text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-gray-800 transition"
+              className="flex items-center justify-center gap-2 rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 sm:px-5"
             >
               <Eye size={16} />
               Review

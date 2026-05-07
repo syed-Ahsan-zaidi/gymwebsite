@@ -34,11 +34,9 @@ export default function MemberSetupForm() {
         const stripeData = await stripeRes.json();
 
         if (stripeData.url) {
-          // 3. User ko seedha Stripe par bhej dein
           window.location.href = stripeData.url;
         } else {
           alert("Profile saved, but payment link failed. Please login again.");
-          window.location.reload();
         }
       } else {
         alert("Error saving profile: " + (memberResult.error || "Unknown error"));
@@ -51,8 +49,8 @@ export default function MemberSetupForm() {
   };
 
   return (
-    <div className="p-10 bg-white rounded-[2.5rem] shadow-2xl max-w-md mx-auto mt-10 border border-gray-100">
-      <h2 className="text-4xl font-black mb-6 italic uppercase tracking-tighter text-slate-900">
+    <div className="mx-auto mt-6 w-full max-w-md rounded-[2.5rem] border border-gray-100 bg-white p-6 shadow-2xl sm:mt-10 sm:p-10">
+      <h2 className="mb-6 text-3xl font-black uppercase italic tracking-tighter text-slate-900 sm:text-4xl">
         Start Your <span className="text-indigo-600">Journey</span>
       </h2>
       <p className="text-gray-400 text-xs font-bold uppercase mb-8 tracking-widest">Complete profile to proceed to payment</p>
@@ -61,7 +59,7 @@ export default function MemberSetupForm() {
         <input name="name" placeholder="Full Name" className="bg-slate-50 border-none p-4 rounded-2xl focus:ring-2 focus:ring-indigo-500 transition-all" required />
         <input name="phoneNumber" placeholder="WhatsApp Number" className="bg-slate-50 border-none p-4 rounded-2xl focus:ring-2 focus:ring-indigo-500 transition-all" required />
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <input name="age" type="number" placeholder="Age" className="bg-slate-50 border-none p-4 rounded-2xl" required />
           <input name="weight" type="number" step="0.1" placeholder="Weight (kg)" className="bg-slate-50 border-none p-4 rounded-2xl" required />
         </div>

@@ -2,40 +2,41 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import  prisma  from "@/lib/prisma";
+import { hasAdminApprovalStatusColumn } from "@/lib/dbCapabilities";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, role, adminSecret } = await req.json();
-
-    // Debugging: Terminal mein check karne ke liye (Sirf development ke waqt)
-    console.log("DEBUG INFO:", {
-      receivedRole: role,
-      receivedSecret: adminSecret,
-      envSecret: process.env.ADMIN_SECRET_KEY ? "SET" : "NOT SET"
-    });
-
-    // Admin Security Check
-    // Note: Role ko lowercase karke check kar rahe hain taake case ka masla na ho
-    if (role.toUpperCase() === "GYM ADMIN" || role.toUpperCase() === "ADMIN") {
-      if (adminSecret !== process.env.ADMIN_SECRET_KEY) {
-        return NextResponse.json(
-          { error: "Invalid Admin Secret Key! Aap register nahi kar sakte." }, 
-          { status: 403 }
-        );
-      }
-    }
+    const { email, password, role, gymId } = await req.json();
+    const normalizedRole = String(role || "MEMBER").toUpperCase();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const canUseAdminApproval = await hasAdminApprovalStatusColumn();
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
-        role: role, // Yeh wahi role save karega jo frontend se aaya
+        role: normalizedRole as any,
+        gymId: gymId || null,
+        ...(canUseAdminApproval
+          ? {
+              adminApprovalStatus:
+                normalizedRole === "ADMIN" ? "PENDING" : "APPROVED",
+            }
+          : {}),
       },
     });
 
-    return NextResponse.json({ message: "User created successfully!" }, { status: 201 });
+    return NextResponse.json(
+      {
+        message:
+          normalizedRole === "ADMIN"
+            ? "Admin request submitted. Wait for super admin approval."
+            : "User created successfully!",
+      },
+      { status: 201 }
+    );
 
   } catch (error: any) {
     console.error("Registration Error:", error);

@@ -14,7 +14,6 @@ import { registerUser } from "@/app/actions/register";
 import { getGyms } from "../actions/gyms";
 
 export default function RegisterPage() {
-  const [role, setRole] = useState("MEMBER");
   const [gyms, setGyms] = useState<{ id: string; gymName: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,7 +43,8 @@ export default function RegisterPage() {
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push("/login?message=Account created! Please login.");
+        const successMessage = result?.message || "Account created! Please login.";
+        router.push(`/login?message=${encodeURIComponent(successMessage)}`);
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -93,7 +93,7 @@ export default function RegisterPage() {
             {/* Role Selection */}
             <div className="space-y-2">
               <Label className="ml-1 font-black uppercase text-[10px] text-slate-400 tracking-widest">Aapka Role</Label>
-              <Select name="role" onValueChange={setRole} defaultValue="MEMBER">
+              <Select name="role" defaultValue="MEMBER">
                 <SelectTrigger className="rounded-xl border-none bg-slate-100 font-bold h-12 text-slate-700">
                   <SelectValue placeholder="Role select karein" />
                 </SelectTrigger>
@@ -117,23 +117,6 @@ export default function RegisterPage() {
               <Label className="ml-1 font-black uppercase text-[10px] text-slate-400 tracking-widest" htmlFor="password">Password</Label>
               <Input id="password" name="password" type="password" placeholder="••••••••" required className="rounded-xl border-none bg-slate-100 font-bold h-12" />
             </div>
-
-            {/* Secret Key */}
-            {(role === "ADMIN" || role === "SUPER_ADMIN" || role === "TRAINER") && (
-              <div className="space-y-2 border-l-4 border-indigo-600 bg-indigo-50/50 p-4 rounded-r-2xl animate-in fade-in slide-in-from-top-2">
-                <Label htmlFor="adminSecret" className="text-indigo-700 font-black text-[10px] uppercase tracking-widest">
-                  {role === "SUPER_ADMIN" ? "Master Admin Secret" : "Staff Authorization Key"}
-                </Label>
-                <Input 
-                  id="adminSecret" 
-                  name="adminSecret" 
-                  type="password" 
-                  placeholder="Enter Secret Key" 
-                  required 
-                  className="rounded-xl border-none bg-white font-bold h-12 shadow-inner" 
-                />
-              </div>
-            )}
 
             <Button 
               className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-black text-white transition-all shadow-lg shadow-indigo-100 mt-6 uppercase tracking-widest italic" 
