@@ -74,30 +74,33 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   return (
     <>
+      {/* Mobile Overlay */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity md:hidden ${
+        className={`fixed inset-0 bg-slate-900/40 z-40 transition-opacity md:hidden ${
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
+      
+      {/* Main Sidebar */}
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-screen w-[82vw] max-w-64 flex-shrink-0 flex-col border-r border-slate-800 bg-slate-950 p-4 font-sans text-white shadow-2xl transition-transform sm:p-5 md:w-64 md:translate-x-0 md:p-6 ${
+        className={`fixed left-0 top-0 z-50 flex h-screen w-[82vw] max-w-64 flex-shrink-0 flex-col border-r border-slate-100 bg-white p-4 font-sans text-slate-900 shadow-2xl transition-transform sm:p-5 md:w-64 md:translate-x-0 md:p-6 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         
         {/* LOGO SECTION */}
         <div className="mb-8 flex items-center gap-2 px-1 sm:mb-10 sm:px-2">
-          <div className="bg-blue-600 p-1.5 rounded-lg">
+          <div className="bg-indigo-600 p-1.5 rounded-lg">
             <Dumbbell size={20} className="text-white" />
           </div>
-          <span className="text-lg font-black uppercase italic tracking-tight text-white sm:text-xl">
-            FlexManage<span className="text-blue-500">Pro</span>
+          <span className="text-lg font-black uppercase italic tracking-tight text-slate-950 sm:text-xl">
+            FlexManage<span className="text-indigo-600">Pro</span>
           </span>
         </div>
 
         {/* NAVIGATION */}
-        <nav className="custom-scrollbar flex-1 space-y-1.5 overflow-y-auto">
+        <nav className="custom-scrollbar flex-1 space-y-1.5 overflow-y-auto pr-1">
           {menuItems.map((item) => {
             if (!item.show) return null;
             const Icon = item.icon;
@@ -108,10 +111,10 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <button 
                   key={item.name}
                   onClick={() => setIsAIModalOpen(true)}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-medium text-slate-400 transition-all duration-200 hover:bg-slate-900 hover:text-slate-200 sm:px-4"
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-medium text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-700 sm:px-4"
                 >
-                  <Icon size={20} className="text-slate-500" />
-                  <span className="text-xs font-bold uppercase tracking-wider sm:text-sm">{item.name}</span>
+                  <Icon size={20} className="text-slate-400 group-hover:text-indigo-500" />
+                  <span className="text-xs font-semibold uppercase tracking-wider sm:text-sm">{item.name}</span>
                 </button>
               );
             }
@@ -123,53 +126,53 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 onClick={onClose}
                 className={`flex items-center gap-3 rounded-xl px-3 py-3 font-medium transition-all duration-200 sm:px-4 ${
                   isActive 
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" 
-                    : "hover:bg-slate-900 text-slate-400 hover:text-slate-200"
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100" 
+                    : "text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"
                 }`}
               >
-                <Icon size={20} className={isActive ? "text-white" : "text-slate-500"} />
-                <span className="text-xs font-bold uppercase tracking-wider sm:text-sm">{item.name}</span>
+                <Icon size={20} className={isActive ? "text-white" : "text-slate-400 group-hover:text-indigo-500"} />
+                <span className="text-xs font-semibold uppercase tracking-wider sm:text-sm">{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* NAYA SECTION: REAL-TIME COLLECTION DISPLAY */}
+        {/* REAL-TIME COLLECTION DISPLAY (SUPER_ADMIN) */}
         {role === "SUPER_ADMIN" && (
           <div className="mb-4">
             <button 
               onClick={() => setIsTodayStatsOpen(true)}
-            className="group flex w-full items-center gap-3 rounded-xl border border-blue-500/10 bg-blue-900/20 px-3 py-3 transition-all hover:border-green-500/40 sm:px-4"
+              className="group flex w-full items-center gap-3 rounded-xl border border-indigo-100 bg-white px-3 py-3 shadow-sm transition-all hover:border-green-300 hover:bg-green-50 sm:px-4"
             >
-              <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30">
-                <DollarSign size={18} className="text-green-500" />
+              <div className="bg-green-100 p-2 rounded-lg group-hover:bg-green-200">
+                <DollarSign size={18} className="text-green-600" />
               </div>
               <div className="text-left">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Today</p>
-              <p className="text-xs font-bold italic text-white sm:text-sm">
-              PKR {todayStats.totalAmount > 0 ? todayStats.totalAmount.toLocaleString() : "0"}
-             </p>
-             </div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Today</p>
+                <p className="text-xs font-black italic text-slate-950 sm:text-sm">
+                  PKR {todayStats.totalAmount > 0 ? todayStats.totalAmount.toLocaleString() : "0"}
+                </p>
+              </div>
             </button>
           </div>
         )}
 
         {/* BOTTOM SECTION */}
-        <div className="pt-6 border-t border-slate-900 space-y-1">
+        <div className="pt-6 border-t border-slate-100 space-y-1">
           <Link
             href="/dashboard/settings" 
             onClick={onClose}
-            className={`flex items-center gap-3 rounded-xl px-3 py-3 transition hover:bg-slate-900 sm:px-4 ${
-              pathname === "/dashboard/settings" ? "text-white bg-slate-900" : "text-slate-500"
+            className={`flex items-center gap-3 rounded-xl px-3 py-3 transition duration-150 sm:px-4 ${
+              pathname === "/dashboard/settings" ? "text-indigo-700 bg-indigo-50" : "text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"
             }`}
           >
-            <Settings size={20} />
-            <span className="text-xs font-bold uppercase tracking-wider sm:text-sm">Settings</span>
+            <Settings size={20} className={pathname === "/dashboard/settings" ? "text-indigo-500" : "text-slate-400"}/>
+            <span className="text-xs font-semibold uppercase tracking-wider sm:text-sm">Settings</span>
           </Link>
 
           <button 
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-red-500/70 transition hover:bg-red-500/5 hover:text-red-500 sm:px-4"
+            className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-red-600/80 transition hover:bg-red-50 hover:text-red-700 sm:px-4"
           >
             <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
             <span className="text-xs font-black uppercase italic tracking-widest sm:text-sm">Logout</span>
