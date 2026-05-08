@@ -13,6 +13,8 @@ import { extractPageFromSearchParams } from "@/lib/url-utils";
 import { GymsEmptyState } from "@/components/gyms/GymsEmptyState";
 import { GymsErrorState } from "@/components/gyms/GymsErrorState";
 
+export const dynamic = 'force-dynamic'
+
 // Props interface for the gyms page component
 interface GymsPageProps {
   searchParams: Promise<{ page?: string }>;
