@@ -41,3 +41,10 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+# Stripe CLI binary
+stripe.exe
+stripe
+
+# Kiro IDE
+.kiro/
