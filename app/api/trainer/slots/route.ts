@@ -73,8 +73,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ slots });
     }
 
-    const expandedSlots = slots.flatMap((slot) => {
-      if (!slot.isRecurring) return [slot];
+    type SlotBase = typeof slots[number];
+    type ExpandedSlot = SlotBase & {
+      generatedStartTime?: string;
+      generatedEndTime?: string;
+    };
+
+    const expandedSlots: ExpandedSlot[] = slots.flatMap((slot) => {
+      if (!slot.isRecurring) return [slot as ExpandedSlot];
 
       const baseStart = new Date(slot.startTime);
       const baseEnd = new Date(slot.endTime);
@@ -97,7 +103,7 @@ export async function GET(request: NextRequest) {
             ...slot,
             generatedStartTime: start.toISOString(),
             generatedEndTime: end.toISOString(),
-          }];
+          }] as ExpandedSlot[];
         }
         current.setUTCDate(current.getUTCDate() + 1);
       }
@@ -139,8 +145,8 @@ export async function GET(request: NextRequest) {
 
     // Remove slots that overlap with any existing booking OR already booked by this member
     const availableSlots = expandedSlots.filter((slot) => {
-      const slotStart = new Date((slot.generatedStartTime ?? slot.startTime) as string);
-      const slotEnd = new Date((slot.generatedEndTime ?? slot.endTime) as string);
+      const slotStart = new Date(slot.generatedStartTime ?? slot.startTime);
+      const slotEnd = new Date(slot.generatedEndTime ?? slot.endTime);
       const trainerConflict = bookedSlots.some(
         (b) => new Date(b.startTime) < slotEnd && new Date(b.endTime) > slotStart
       );
