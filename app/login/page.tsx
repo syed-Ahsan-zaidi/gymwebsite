@@ -82,12 +82,12 @@ function LoginContent() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Password</Label>
-              <Input 
-                id="password" 
-                name="password" 
-                type="password" 
+              <Input
+                id="password"
+                name="password"
+                type="password"
                 className="h-12 rounded-xl border-slate-100 bg-slate-50/50 focus:ring-blue-600"
-                required 
+                required
               />
             </div>
             <Button className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase italic tracking-widest shadow-lg shadow-blue-100 transition-all active:scale-95" type="submit" disabled={loading}>

@@ -1,7 +1,9 @@
-import prisma from "@/lib/prisma"; 
-import { PaymentStatus, Prisma } from "@prisma/client"; 
+export const dynamic = "force-dynamic";
+
+import prisma from "@/lib/prisma";
+import { PaymentStatus, Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; 
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import AdminPaymentList from "@/components/AdminPaymentList";

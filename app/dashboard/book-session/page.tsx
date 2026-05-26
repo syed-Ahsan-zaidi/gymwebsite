@@ -47,7 +47,7 @@ export default function BookSessionPage() {
     const res = await fetch(`/api/bookings?page=${bookingPage}`);
     const data = await res.json();
     if (res.ok) {
-      setBookings(data.bookings ?? []);
+      setBookings((data.bookings ?? []).filter((b: BookingRow) => b.status !== "CANCELLED"));
       setBookingTotalPages(data.pagination?.totalPages ?? 1);
     }
   };
@@ -55,6 +55,21 @@ export default function BookSessionPage() {
   useEffect(() => {
     loadBookings();
   }, [bookingPage]);
+
+  const cancelBooking = async (id: string) => {
+    if (!confirm("Kya aap yeh booking cancel karna chahte hain?")) return;
+    const res = await fetch(`/api/bookings/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "CANCELLED" }),
+    });
+    if (res.ok) {
+      setBookings((prev) => prev.filter((b) => b.id !== id));
+      loadSlots();
+    } else {
+      alert("Cancel nahi ho saka, dobara try karein.");
+    }
+  };
 
   const onBook = async (e: FormEvent) => {
     e.preventDefault();
@@ -142,6 +157,7 @@ export default function BookSessionPage() {
               <th className="p-3 text-left">Start</th>
               <th className="p-3 text-left">End</th>
               <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-left">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -151,12 +167,30 @@ export default function BookSessionPage() {
                 <td className="p-3">{booking.trainer.user.email}</td>
                 <td className="p-3">{new Date(booking.startTime).toLocaleString("en-PK")}</td>
                 <td className="p-3">{new Date(booking.endTime).toLocaleString("en-PK")}</td>
-                <td className="p-3">{booking.status}</td>
+                <td className="p-3">
+                  <span className={`inline-block px-2 py-1 rounded-md text-xs font-semibold ${
+                    booking.status === "PENDING" ? "bg-yellow-100 text-yellow-700"
+                    : booking.status === "CONFIRMED" ? "bg-blue-100 text-blue-700"
+                    : "bg-green-100 text-green-700"
+                  }`}>
+                    {booking.status}
+                  </span>
+                </td>
+                <td className="p-3">
+                  {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
+                    <button
+                      onClick={() => cancelBooking(booking.id)}
+                      className="px-3 py-1 text-xs font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
             {bookings.length === 0 && (
               <tr>
-                <td className="p-4 text-center text-slate-500" colSpan={5}>
+                <td className="p-4 text-center text-slate-500" colSpan={6}>
                   No booking history yet.
                 </td>
               </tr>

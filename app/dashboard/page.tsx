@@ -35,7 +35,7 @@ export const revalidate = 60;
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; gymPage?: string }>;
 }) {
   const session = await getServerSession(authOptions);
   const resolvedSearchParams = await searchParams;
@@ -49,13 +49,26 @@ export default async function DashboardPage({
   // --- 1. SUPER ADMIN VIEW ---
   if (userRole === "SUPER_ADMIN") {
       const canUseAdminApproval = await hasAdminApprovalStatusColumn();
-      const [totalGyms, totalUsers, gyms, pendingAdminRequests] = await Promise.all([
+
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+
+      const GYM_PAGE_SIZE = 5;
+      const gymPage = Math.max(1, parseInt(resolvedSearchParams.gymPage ?? "1", 10) || 1);
+      const gymSkip = (gymPage - 1) * GYM_PAGE_SIZE;
+
+      const [totalGyms, totalUsers, gyms, gymCount, pendingAdminRequests, todayPayments] = await Promise.all([
         prisma!.gymProfile.count(),
         prisma!.user.count(),
         prisma!.gymProfile.findMany({
           include: { _count: { select: { users: true } } },
           orderBy: { createdAt: "desc" },
+          skip: gymSkip,
+          take: GYM_PAGE_SIZE,
         }),
+        prisma!.gymProfile.count(),
         canUseAdminApproval
           ? prisma!.user.findMany({
               where: { role: "ADMIN", adminApprovalStatus: "PENDING" },
@@ -74,7 +87,31 @@ export default async function DashboardPage({
               take: 50,
             })
           : Promise.resolve([]),
+        prisma!.payment.findMany({
+          where: {
+            status: "SUCCESS",
+            createdAt: { gte: todayStart, lte: todayEnd },
+          },
+          select: {
+            amount: true,
+            createdAt: true,
+            member: {
+              select: {
+                name: true,
+                user: {
+                  select: {
+                    gym: { select: { gymName: true } },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        }),
       ]);
+
+      const todayTotal = todayPayments.reduce((sum, p) => sum + p.amount, 0);
+      const gymTotalPages = Math.max(1, Math.ceil(gymCount / GYM_PAGE_SIZE));
 
     return (
       <div className="mx-auto max-w-7xl space-y-8 bg-slate-50 px-4 py-6 sm:space-y-12 sm:px-6 md:px-10">
@@ -85,7 +122,7 @@ export default async function DashboardPage({
           <p className="text-slate-500 font-medium">Global platform overview and gym management.</p>
         </header>
 
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-4">
           <div className="p-8 bg-white rounded-[2.5rem] shadow-sm border border-indigo-50">
             <p className="text-[10px] font-black uppercase text-indigo-400 tracking-widest">Total Active Gyms</p>
             <p className="text-3xl font-black text-slate-800 sm:text-5xl">{totalGyms}</p>
@@ -94,10 +131,45 @@ export default async function DashboardPage({
             <p className="text-[10px] font-black uppercase text-indigo-400 tracking-widest">Global Users</p>
             <p className="text-3xl font-black text-slate-800 sm:text-5xl">{totalUsers}</p>
           </div>
+          <div className="p-8 bg-green-50 rounded-[2.5rem] shadow-sm border border-green-100">
+            <p className="text-[10px] font-black uppercase text-green-500 tracking-widest">Today&apos;s Revenue</p>
+            <p className="text-3xl font-black text-green-700 sm:text-5xl">PKR {todayTotal.toLocaleString()}</p>
+            <p className="text-xs text-green-500 font-semibold mt-1">{todayPayments.length} payment{todayPayments.length !== 1 ? "s" : ""}</p>
+          </div>
           <Link href="/super-admin/register-gym" className="p-8 bg-indigo-600 text-white rounded-[2.5rem] shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center font-black text-xl italic text-center no-underline">
             + REGISTER NEW GYM
           </Link>
         </div>
+
+        {todayPayments.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-black text-slate-800 italic uppercase">Today&apos;s Payments</h2>
+            <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[500px] text-left">
+                  <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    <tr>
+                      <th className="p-4">Member</th>
+                      <th className="p-4">Gym</th>
+                      <th className="p-4">Amount</th>
+                      <th className="p-4">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {todayPayments.map((p, i) => (
+                      <tr key={i} className="hover:bg-slate-50">
+                        <td className="p-4 text-sm font-semibold text-slate-700">{p.member?.name ?? "—"}</td>
+                        <td className="p-4 text-sm text-slate-600">{p.member?.user?.gym?.gymName ?? "—"}</td>
+                        <td className="p-4 text-sm font-bold text-green-600">PKR {p.amount.toLocaleString()}</td>
+                        <td className="p-4 text-xs text-slate-400">{new Date(p.createdAt).toLocaleTimeString("en-PK")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="space-y-6">
           <h2 className="text-2xl font-black text-slate-800 italic uppercase">Pending Admin Approvals</h2>
@@ -141,7 +213,10 @@ export default async function DashboardPage({
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-2xl font-black text-slate-800 italic uppercase">Onboarded Gyms</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-black text-slate-800 italic uppercase">Onboarded Gyms</h2>
+            <span className="text-sm text-slate-500 font-medium">Page {gymPage} of {gymTotalPages}</span>
+          </div>
           <div className="grid gap-4">
             {gyms.map(gym => (
               <div key={gym.id} className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md md:flex-row md:items-center md:justify-between">
@@ -166,6 +241,27 @@ export default async function DashboardPage({
                 </div>
               </div>
             ))}
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-slate-500 font-medium">
+              Total {gymCount} gyms • Page {gymPage} of {gymTotalPages}
+            </span>
+            <div className="flex gap-3">
+              <Link
+                href={`/dashboard?gymPage=${gymPage - 1}`}
+                className={`px-5 py-2 border rounded-xl text-sm font-bold transition ${gymPage <= 1 ? "border-slate-100 text-slate-300 pointer-events-none" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+                aria-disabled={gymPage <= 1}
+              >
+                ← Previous
+              </Link>
+              <Link
+                href={`/dashboard?gymPage=${gymPage + 1}`}
+                className={`px-5 py-2 rounded-xl text-sm font-bold transition ${gymPage >= gymTotalPages ? "bg-indigo-100 text-indigo-300 pointer-events-none" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
+                aria-disabled={gymPage >= gymTotalPages}
+              >
+                Next →
+              </Link>
+            </div>
           </div>
         </section>
       </div>

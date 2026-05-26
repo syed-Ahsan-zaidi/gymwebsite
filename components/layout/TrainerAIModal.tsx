@@ -1,10 +1,10 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { getMemberAIAdvice } from "@/app/actions/memberAi";
+import { getTrainerAIAdvice } from "@/app/actions/trainerAi";
 
 type Message = { role: "user" | "ai"; text: string };
 
-export default function AIModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function TrainerAIModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,10 +23,10 @@ export default function AIModal({ isOpen, onClose }: { isOpen: boolean; onClose:
     setMessages((prev) => [...prev, { role: "user", text: userMessage }]);
     setLoading(true);
     try {
-      const res = await getMemberAIAdvice(userMessage);
+      const res = await getTrainerAIAdvice(userMessage);
       setMessages((prev) => [...prev, { role: "ai", text: res || "Koi jawab nahi mila." }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "ai", text: "Coach abhi masroof hai, baad mein try karein." }]);
+      setMessages((prev) => [...prev, { role: "ai", text: "System error, please try again." }]);
     } finally {
       setLoading(false);
     }
@@ -38,8 +38,8 @@ export default function AIModal({ isOpen, onClose }: { isOpen: boolean; onClose:
 
         <div className="flex justify-between items-center px-8 pt-7 pb-4 border-b border-gray-100 shrink-0">
           <div>
-            <h2 className="text-2xl font-black text-indigo-600">FLEX ASSISTANT 🤖</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Exercises, workout plans aur trainer info</p>
+            <h2 className="text-2xl font-black text-indigo-600">TRAINER AI 💪</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Members, attendance, plans aur classes</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
         </div>
@@ -47,7 +47,7 @@ export default function AIModal({ isOpen, onClose }: { isOpen: boolean; onClose:
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           {messages.length === 0 && (
             <p className="text-center text-xs text-slate-400 mt-10">
-              Koi sawal poochein — exercises, workout plans ya trainer info
+              Misal: Ali ki attendance kaisi hai? | Mere kitne members active hain?
             </p>
           )}
           {messages.map((msg, i) => (
@@ -66,7 +66,7 @@ export default function AIModal({ isOpen, onClose }: { isOpen: boolean; onClose:
           {loading && (
             <div className="flex justify-start">
               <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-bl-none text-sm text-gray-400 font-medium">
-                <span className="animate-pulse">Coach soch raha hai...</span>
+                <span className="animate-pulse">AI soch raha hai...</span>
               </div>
             </div>
           )}

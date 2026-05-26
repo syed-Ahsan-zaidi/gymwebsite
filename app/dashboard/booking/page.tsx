@@ -23,7 +23,7 @@ export default function TrainerBookingPage() {
       const res = await fetch(`/api/bookings?page=${page}`);
       const data = await res.json();
       if (res.ok) {
-        setBookings(data.bookings ?? []);
+        setBookings((data.bookings ?? []).filter((b: BookingRow) => b.status !== "CANCELLED"));
         setTotalPages(data.pagination?.totalPages ?? 1);
       }
     } finally {
@@ -50,7 +50,13 @@ export default function TrainerBookingPage() {
       body: JSON.stringify({ status }),
     });
     if (res.ok) {
-      loadBookings();
+      if (status === "CANCELLED") {
+        setBookings((prev) => prev.filter((b) => b.id !== id));
+      } else {
+        setBookings((prev) =>
+          prev.map((b) => (b.id === id ? { ...b, status } : b))
+        );
+      }
     } else {
       alert("Status update failed");
     }
@@ -87,7 +93,15 @@ export default function TrainerBookingPage() {
                   <td className="p-3 whitespace-nowrap">{new Date(booking.startTime).toLocaleString("en-PK")}</td>
                   <td className="p-3 whitespace-nowrap">{new Date(booking.endTime).toLocaleString("en-PK")}</td>
                   <td className="p-3 whitespace-nowrap">
-                    <span className="inline-block px-2 py-1 rounded-md text-xs font-semibold bg-slate-100">
+                    <span className={`inline-block px-2 py-1 rounded-md text-xs font-semibold ${
+                      booking.status === "PENDING"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : booking.status === "CONFIRMED"
+                        ? "bg-blue-100 text-blue-700"
+                        : booking.status === "COMPLETED"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}>
                       {booking.status}
                     </span>
                   </td>
@@ -97,7 +111,13 @@ export default function TrainerBookingPage() {
                         <Button
                           key={status}
                           variant="outline"
-                          className="h-7 px-1.5 text-xs"
+                          className={`h-7 px-1.5 text-xs font-semibold border ${
+                            status === "CONFIRMED"
+                              ? "border-blue-400 text-blue-600 hover:bg-blue-50"
+                              : status === "COMPLETED"
+                              ? "border-green-400 text-green-600 hover:bg-green-50"
+                              : "border-red-400 text-red-600 hover:bg-red-50"
+                          }`}
                           onClick={() => updateStatus(booking.id, status)}
                         >
                           {status}

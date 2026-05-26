@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import AIModal from "@/components/layout/AIModal";
+import AdminAIModal from "@/components/layout/AdminAIModal";
+import TrainerAIModal from "@/components/layout/TrainerAIModal";
+import SuperAdminAIModal from "@/components/layout/SuperAdminAIModal";
 import TodayPaymentsModal from "./TodayPaymentsModal";
 import { 
   LayoutDashboard, 
@@ -32,6 +35,9 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const role = session?.user?.role;
   
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isAdminAIModalOpen, setIsAdminAIModalOpen] = useState(false);
+  const [isTrainerAIModalOpen, setIsTrainerAIModalOpen] = useState(false);
+  const [isSuperAdminAIModalOpen, setIsSuperAdminAIModalOpen] = useState(false);
   const [isTodayStatsOpen, setIsTodayStatsOpen] = useState(false);
   const [todayStats, setTodayStats] = useState({ totalAmount: 0, totalCount: 0 });
 
@@ -67,7 +73,10 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     { name: "Payments", href: "/dashboard/payments", icon: CreditCard, show: role === "ADMIN" },
     { name: "Trainers", href: "/dashboard/trainers", icon: Award, show: role === "ADMIN" },
     { name: "Gym Profile", href: "/dashboard/profile", icon: Dumbbell, show: role === "ADMIN" },
-    { name: "AI Assistant", icon: MessageSquare, show: role !== "ADMIN" && role !== "SUPER_ADMIN", isAI: true },
+    { name: "AI Assistant", icon: MessageSquare, show: role === "SUPER_ADMIN", isSuperAdminAI: true },
+    { name: "AI Assistant", icon: MessageSquare, show: role === "ADMIN", isAdminAI: true },
+    { name: "AI Assistant", icon: MessageSquare, show: role === "TRAINER", isTrainerAI: true },
+    { name: "AI Assistant", icon: MessageSquare, show: role === "MEMBER", isAI: true },
     { name: "Book Session", href: "/dashboard/book-session", icon: CheckCircle2, show: role === "MEMBER" },
     { name: "Classes", href: "/dashboard/classes", icon: Award, show: role === "MEMBER" },
   ];
@@ -106,9 +115,48 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             
+            if ((item as any).isSuperAdminAI) {
+              return (
+                <button
+                  key="super-admin-ai"
+                  onClick={() => setIsSuperAdminAIModalOpen(true)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-medium text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-700 sm:px-4"
+                >
+                  <Icon size={20} className="text-slate-400 group-hover:text-indigo-500" />
+                  <span className="text-xs font-semibold uppercase tracking-wider sm:text-sm">{item.name}</span>
+                </button>
+              );
+            }
+
+            if ((item as any).isTrainerAI) {
+              return (
+                <button
+                  key="trainer-ai"
+                  onClick={() => setIsTrainerAIModalOpen(true)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-medium text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-700 sm:px-4"
+                >
+                  <Icon size={20} className="text-slate-400 group-hover:text-indigo-500" />
+                  <span className="text-xs font-semibold uppercase tracking-wider sm:text-sm">{item.name}</span>
+                </button>
+              );
+            }
+
+            if (item.isAdminAI) {
+              return (
+                <button
+                  key="admin-ai"
+                  onClick={() => setIsAdminAIModalOpen(true)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-medium text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-700 sm:px-4"
+                >
+                  <Icon size={20} className="text-slate-400 group-hover:text-indigo-500" />
+                  <span className="text-xs font-semibold uppercase tracking-wider sm:text-sm">{item.name}</span>
+                </button>
+              );
+            }
+
             if (item.isAI) {
               return (
-                <button 
+                <button
                   key={item.name}
                   onClick={() => setIsAIModalOpen(true)}
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-medium text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-700 sm:px-4"
@@ -182,6 +230,9 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
       {/* MODALS */}
       <AIModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} />
+      <AdminAIModal isOpen={isAdminAIModalOpen} onClose={() => setIsAdminAIModalOpen(false)} />
+      <TrainerAIModal isOpen={isTrainerAIModalOpen} onClose={() => setIsTrainerAIModalOpen(false)} />
+      <SuperAdminAIModal isOpen={isSuperAdminAIModalOpen} onClose={() => setIsSuperAdminAIModalOpen(false)} />
       <TodayPaymentsModal 
         isOpen={isTodayStatsOpen} 
         stats={todayStats}

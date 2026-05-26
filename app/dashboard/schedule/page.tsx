@@ -190,31 +190,46 @@ export default function TrainerSchedulePage() {
       <section className="bg-white rounded-2xl border p-4 md:p-6 shadow-sm space-y-4">
         <h2 className="text-xl font-bold text-slate-800">Availability Slots</h2>
         <form onSubmit={createSlot} className="grid grid-cols-1 gap-3 md:grid-cols-5">
-          <Input 
-            type="datetime-local" 
-            value={slotStart} 
-            onChange={(e) => setSlotStart(e.target.value)} 
-            required 
+          <Input
+            type="datetime-local"
+            value={slotStart}
+            onChange={(e) => {
+              setSlotStart(e.target.value);
+              if (slotRecurring && e.target.value) {
+                setSlotWeekday(String(new Date(e.target.value).getDay()));
+              }
+            }}
+            required
           />
-          <Input 
-            type="datetime-local" 
-            value={slotEnd} 
-            onChange={(e) => setSlotEnd(e.target.value)} 
-            required 
+          <Input
+            type="datetime-local"
+            value={slotEnd}
+            onChange={(e) => setSlotEnd(e.target.value)}
+            required
           />
           <label className="flex items-center gap-2 text-sm border rounded-md px-3 bg-slate-50 cursor-pointer">
-            <input type="checkbox" checked={slotRecurring} onChange={(e) => setSlotRecurring(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={slotRecurring}
+              onChange={(e) => {
+                setSlotRecurring(e.target.checked);
+                if (e.target.checked && slotStart) {
+                  setSlotWeekday(String(new Date(slotStart).getDay()));
+                }
+              }}
+            />
             Recurring
           </label>
-          <Input
-            type="number"
-            min={0}
-            max={6}
+          <select
+            className="border rounded-md px-3 h-10 text-sm bg-white disabled:bg-slate-100 disabled:text-slate-400"
             value={slotWeekday}
             onChange={(e) => setSlotWeekday(e.target.value)}
             disabled={!slotRecurring}
-            placeholder="Weekday (0-6)"
-          />
+          >
+            {["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"].map((d, i) => (
+              <option key={i} value={i}>{d}</option>
+            ))}
+          </select>
           <Button type="submit" className="bg-blue-600 hover:bg-blue-700 font-bold">Add Slot</Button>
         </form>
 
@@ -222,29 +237,34 @@ export default function TrainerSchedulePage() {
           <table className="w-full min-w-[760px] text-sm">
             <thead className="bg-slate-50">
               <tr className="border-b">
-                <th className="p-3 text-left font-semibold">Start</th>
-                <th className="p-3 text-left font-semibold">End</th>
-                <th className="p-3 text-left font-semibold">Recurring</th>
-                <th className="p-3 text-left font-semibold">Weekday</th>
+                <th className="p-3 text-left font-semibold">Slot</th>
+                <th className="p-3 text-left font-semibold">Type</th>
                 <th className="p-3 text-right font-semibold">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {slots.map((slot) => (
-                <tr key={slot.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="p-3">{new Date(slot.startTime).toLocaleString("en-PK")}</td>
-                  <td className="p-3">{new Date(slot.endTime).toLocaleString("en-PK")}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-1 rounded-full text-xs ${slot.isRecurring ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                      {slot.isRecurring ? "Yes" : "No"}
-                    </span>
-                  </td>
-                  <td className="p-3">{slot.weekday ?? "-"}</td>
-                  <td className="p-3 text-right">
-                    <Button variant="destructive" size="sm" onClick={() => removeSlot(slot.id)}>Remove</Button>
-                  </td>
-                </tr>
-              ))}
+              {slots.map((slot) => {
+                const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+                const startTime = new Date(slot.startTime).toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
+                const endTime = new Date(slot.endTime).toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
+                return (
+                  <tr key={slot.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-3 font-medium">
+                      {slot.isRecurring
+                        ? `Every ${DAYS[slot.weekday ?? 0]}, ${startTime} – ${endTime}`
+                        : `${new Date(slot.startTime).toLocaleString("en-PK")} – ${new Date(slot.endTime).toLocaleString("en-PK")}`}
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded-full text-xs ${slot.isRecurring ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>
+                        {slot.isRecurring ? "Recurring" : "One-time"}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">
+                      <Button variant="destructive" size="sm" onClick={() => removeSlot(slot.id)}>Remove</Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

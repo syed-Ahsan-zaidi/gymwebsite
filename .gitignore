@@ -48,3 +48,11 @@ stripe
 
 # Kiro IDE
 .kiro/
+
+# Claude Code (Anthropic)
+.claude/
+
+# Cursor IDE
+.cursor/
+.cursorignore
+.cursorindexingignore

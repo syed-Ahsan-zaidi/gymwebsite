@@ -57,8 +57,7 @@ export async function GET(request: NextRequest) {
               OR: [
                 {
                   isRecurring: false,
-                  startTime: { gte: fromDate },
-                  endTime: { lte: toDate },
+                  endTime: { gt: fromDate, lte: toDate },
                 },
                 {
                   isRecurring: true,
@@ -77,30 +76,79 @@ export async function GET(request: NextRequest) {
     const expandedSlots = slots.flatMap((slot) => {
       if (!slot.isRecurring) return [slot];
 
-      const generated: Array<Record<string, unknown>> = [];
       const baseStart = new Date(slot.startTime);
       const baseEnd = new Date(slot.endTime);
-      const slotDurationMs = baseEnd.getTime() - baseStart.getTime();
 
+      // For recurring slots use only the time-of-day difference (ignore date gap)
+      const startMins = baseStart.getUTCHours() * 60 + baseStart.getUTCMinutes();
+      const endMins = baseEnd.getUTCHours() * 60 + baseEnd.getUTCMinutes();
+      let durationMins = endMins - startMins;
+      if (durationMins <= 0) durationMins += 24 * 60; // overnight slot
+      const slotDurationMs = durationMins * 60 * 1000;
+
+      // Only generate the FIRST upcoming occurrence for recurring slots
       const current = new Date(fromDate);
       while (current <= toDate) {
         if (resolveWeekday(current) === slot.weekday) {
           const start = new Date(current);
           start.setUTCHours(baseStart.getUTCHours(), baseStart.getUTCMinutes(), 0, 0);
           const end = new Date(start.getTime() + slotDurationMs);
-
-          generated.push({
+          return [{
             ...slot,
             generatedStartTime: start.toISOString(),
             generatedEndTime: end.toISOString(),
-          });
+          }];
         }
         current.setUTCDate(current.getUTCDate() + 1);
       }
-      return generated;
+      return [];
     });
 
-    return NextResponse.json({ slots: expandedSlots });
+    // Fetch existing PENDING/CONFIRMED bookings for this trainer in the date range
+    const bookedSlots = await prisma.sessionBooking.findMany({
+      where: {
+        trainerId: trainerProfile.id,
+        status: { in: ["PENDING", "CONFIRMED"] },
+        startTime: { lt: toDate },
+        endTime: { gt: fromDate },
+      },
+      select: { startTime: true, endTime: true },
+    });
+
+    // If MEMBER: also fetch their own PENDING/CONFIRMED booked slotIds to hide recurring occurrences
+    let memberBookedSlotIds = new Set<string>();
+    if (session.user.role === "MEMBER") {
+      const memberProfile = await prisma.member.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      if (memberProfile) {
+        const memberBookings = await prisma.sessionBooking.findMany({
+          where: {
+            memberId: memberProfile.id,
+            status: { in: ["PENDING", "CONFIRMED", "COMPLETED"] },
+            slotId: { not: null },
+          },
+          select: { slotId: true },
+        });
+        for (const b of memberBookings) {
+          if (b.slotId) memberBookedSlotIds.add(b.slotId);
+        }
+      }
+    }
+
+    // Remove slots that overlap with any existing booking OR already booked by this member
+    const availableSlots = expandedSlots.filter((slot) => {
+      const slotStart = new Date((slot.generatedStartTime ?? slot.startTime) as string);
+      const slotEnd = new Date((slot.generatedEndTime ?? slot.endTime) as string);
+      const trainerConflict = bookedSlots.some(
+        (b) => new Date(b.startTime) < slotEnd && new Date(b.endTime) > slotStart
+      );
+      const memberAlreadyBooked = memberBookedSlotIds.has(slot.id as string);
+      return !trainerConflict && !memberAlreadyBooked;
+    });
+
+    return NextResponse.json({ slots: availableSlots });
   } catch (error) {
     console.error("GET /api/trainer/slots failed", error);
     return NextResponse.json({ error: "Failed to load slots" }, { status: 500 });

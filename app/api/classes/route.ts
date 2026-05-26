@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       const trainer = await prisma.trainer.findUnique({ where: { userId }, select: { id: true } });
       if (!trainer) return NextResponse.json({ error: "Trainer profile missing" }, { status: 404 });
 
-      const where = { trainerId: trainer.id };
+      const where = { trainerId: trainer.id, isActive: true };
       const [total, classes] = await Promise.all([
         prisma.groupClass.count({ where }),
         prisma.groupClass.findMany({
