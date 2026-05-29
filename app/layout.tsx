@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FlexManage Pro - Gym Management System",
+  title: "FlexManage Pro | Fitzone Gym Management System",
   description: "Modern Gym Management and Payment Tracking",
 };
 
