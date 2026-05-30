@@ -43,7 +43,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   const fetchTodayStats = async () => {
     try {
-      const response = await fetch("/api/stats/today");
+      const response = await fetch("/api/stats/today", { cache: "no-store" });
       const data = await response.json();
       setTodayStats({
         totalAmount: data.totalAmount || 0,
